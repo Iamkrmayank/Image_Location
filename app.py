@@ -28,36 +28,43 @@ def convert_to_degrees(value, ref):
         degrees = -degrees
     return degrees
 
-# Function to display map with marker
-def display_map(lat, lon):
-    st.write(f"Latitude: {lat}, Longitude: {lon}")
-    map_ = folium.Map(location=[lat, lon], zoom_start=15)
+# Function to display map with multiple markers
+def display_map(locations):
+    map_center = [locations[0]['latitude'], locations[0]['longitude']]  # Center map at the first location
+    map_ = folium.Map(location=map_center, zoom_start=5)
 
-    # Use a custom FontAwesome icon for the marker
-    folium.Marker(
-        [lat, lon], 
-        popup="Image Location",
-        tooltip="Click for more info",
-        icon=folium.Icon(icon="cloud", prefix="fa", color="blue")  # Custom Icon
-    ).add_to(map_)
+    for loc in locations:
+        # Place a marker for each location without showing latitude and longitude in the UI
+        folium.Marker(
+            [loc['latitude'], loc['longitude']], 
+            popup="Image Location",  # You can customize the popup text if needed
+            tooltip="Click for more info",
+            icon=folium.Icon(icon="cloud", prefix="fa", color="blue")  # Custom Icon
+        ).add_to(map_)
     
     # Render the map with Streamlit
     st_folium(map_, width=700)
 
 # Streamlit user interface
-st.title("Image Upload with GPS Location Mapping")
+st.title("Multiple Image Upload with GPS Location Mapping")
 
-uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg"])
+# Allow multiple image upload
+uploaded_files = st.file_uploader("Upload images", type=["jpg", "jpeg"], accept_multiple_files=True)
 
-if uploaded_file:
-    # Extract EXIF data (GPS coordinates)
-    exif_data = get_exif_data(uploaded_file)
+if uploaded_files:
+    locations = []
+    for uploaded_file in uploaded_files:
+        # Extract EXIF data (GPS coordinates)
+        exif_data = get_exif_data(uploaded_file)
 
-    if exif_data:
-        # If GPS coordinates found, display map
-        lat = exif_data['latitude']
-        lon = exif_data['longitude']
-        st.success("Location data extracted!")
-        display_map(lat, lon)
+        if exif_data:
+            locations.append(exif_data)
+        else:
+            st.warning(f"No GPS data found in image: {uploaded_file.name}")
+
+    if locations:
+        st.success(f"Location data extracted for {len(locations)} images!")
+        display_map(locations)
     else:
-        st.warning("No GPS data found in this image.")
+        st.warning("No images with valid GPS data were uploaded.")
+
