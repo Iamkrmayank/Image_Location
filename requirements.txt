@@ -3,5 +3,5 @@ exifread
 folium
 geopy
 Pillow
-
+streamlit-folium
 
