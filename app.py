@@ -32,8 +32,17 @@ def convert_to_degrees(value, ref):
 def display_map(lat, lon):
     st.write(f"Latitude: {lat}, Longitude: {lon}")
     map_ = folium.Map(location=[lat, lon], zoom_start=15)
-    folium.Marker([lat, lon], tooltip="Image Location").add_to(map_)
-    st_folium(map_, width=700)  # Use st_folium to display the map in Streamlit
+
+    # Use a custom FontAwesome icon for the marker
+    folium.Marker(
+        [lat, lon], 
+        popup="Image Location",
+        tooltip="Click for more info",
+        icon=folium.Icon(icon="cloud", prefix="fa", color="blue")  # Custom Icon
+    ).add_to(map_)
+    
+    # Render the map with Streamlit
+    st_folium(map_, width=700)
 
 # Streamlit user interface
 st.title("Image Upload with GPS Location Mapping")
@@ -52,4 +61,3 @@ if uploaded_file:
         display_map(lat, lon)
     else:
         st.warning("No GPS data found in this image.")
-
