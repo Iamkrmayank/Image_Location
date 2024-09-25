@@ -1,9 +1,8 @@
 import streamlit as st
 import exifread
 import folium
-from folium.plugins import MarkerCluster
 from PIL import Image
-import io
+from streamlit_folium import st_folium
 
 # Function to extract GPS coordinates from the image
 def get_exif_data(image):
@@ -34,7 +33,7 @@ def display_map(lat, lon):
     st.write(f"Latitude: {lat}, Longitude: {lon}")
     map_ = folium.Map(location=[lat, lon], zoom_start=15)
     folium.Marker([lat, lon], tooltip="Image Location").add_to(map_)
-    st_data = st_folium(map_, width=700)
+    st_folium(map_, width=700)  # Use st_folium to display the map in Streamlit
 
 # Streamlit user interface
 st.title("Image Upload with GPS Location Mapping")
@@ -53,3 +52,4 @@ if uploaded_file:
         display_map(lat, lon)
     else:
         st.warning("No GPS data found in this image.")
+
