@@ -30,41 +30,46 @@ def convert_to_degrees(value, ref):
 
 # Function to display map with multiple markers
 def display_map(locations):
-    map_center = [locations[0]['latitude'], locations[0]['longitude']]  # Center map at the first location
-    map_ = folium.Map(location=map_center, zoom_start=5)
+    if locations:
+        # Set the map center to the first valid image location
+        map_center = [locations[0]['latitude'], locations[0]['longitude']]
+        map_ = folium.Map(location=map_center, zoom_start=5)
 
-    for loc in locations:
-        # Place a marker for each location without showing latitude and longitude in the UI
-        folium.Marker(
-            [loc['latitude'], loc['longitude']], 
-            popup="Image Location",  # You can customize the popup text if needed
-            tooltip="Click for more info",
-            icon=folium.Icon(icon="cloud", prefix="fa", color="blue")  # Custom Icon
-        ).add_to(map_)
-    
-    # Render the map with Streamlit
-    st_folium(map_, width=700)
+        # Add a marker for each valid GPS location
+        for loc in locations:
+            folium.Marker(
+                [loc['latitude'], loc['longitude']],
+                popup="Image Location",
+                tooltip="Click for more info",
+                icon=folium.Icon(icon="cloud", prefix="fa", color="blue")  # Custom Icon
+            ).add_to(map_)
+        
+        # Render the map with Streamlit
+        st_folium(map_, width=700)
+    else:
+        st.warning("No valid locations to display on the map.")
 
 # Streamlit user interface
 st.title("Multiple Image Upload with GPS Location Mapping")
 
-# Allow multiple image upload
+# Allow multiple image uploads
 uploaded_files = st.file_uploader("Upload images", type=["jpg", "jpeg"], accept_multiple_files=True)
 
 if uploaded_files:
     locations = []
+    
+    # Process each uploaded image
     for uploaded_file in uploaded_files:
-        # Extract EXIF data (GPS coordinates)
         exif_data = get_exif_data(uploaded_file)
-
+        
         if exif_data:
-            locations.append(exif_data)
+            locations.append(exif_data)  # Append valid locations to the list
         else:
             st.warning(f"No GPS data found in image: {uploaded_file.name}")
 
     if locations:
         st.success(f"Location data extracted for {len(locations)} images!")
-        display_map(locations)
+        display_map(locations)  # Pass all valid locations to the map
     else:
         st.warning("No images with valid GPS data were uploaded.")
 
